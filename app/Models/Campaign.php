@@ -8,11 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class Campaign extends Model
 {
     protected $fillable = [
-        'title', 'description', 'goal_amount', 'current_amount'
+        'title', 'description', 'goal_amount', 'current_amount', 'user_id'
     ];
 
     public function donations()
     {
         return $this->hasMany(Donation::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

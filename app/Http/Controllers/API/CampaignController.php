@@ -17,11 +17,12 @@ class CampaignController extends Controller
             'target_amount' => 'required|numeric|min:0',
         ]);
 
+
         // Create the campaign
         $campaign = Campaign::create([
             'title' => $validatedData['title'],
             'description' => $validatedData['description'],
-            'target_amount' => $validatedData['target_amount'],
+            'goal_amount' => $validatedData['target_amount'],
             'current_amount' => 0,
             'user_id' => auth()->user()->id,
         ]);
