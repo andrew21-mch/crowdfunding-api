@@ -32,17 +32,30 @@ class CampaignController extends Controller
 
     public function getAllCampaigns()
     {
-        $campaigns = Campaign::all();
+        $campaigns = Campaign::with('createdBy')->get();
 
         return response()->json(['campaigns' => $campaigns]);
     }
 
     public function getCampaign($campaignId)
-    {
-        $campaign = Campaign::findOrFail($campaignId);
+{
+    try {
+        $campaign = Campaign::with('createdBy')->findOrFail($campaignId);
+
+        // Perform any additional validation checks here
+        // For example, you can check if the campaign is active, etc.
 
         return response()->json(['campaign' => $campaign]);
+    } catch (\Exception $e) {
+        // Handle the case where the campaign is not found
+        if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return response()->json(['error' => 'Campaign not found'], 404);
+        }
+
+        // Handle any other exceptions or validation errors
+        return response()->json(['error' => $e->getMessage()], 400);
     }
+}
 
     public function updateCampaign(Request $request, $campaignId)
     {
