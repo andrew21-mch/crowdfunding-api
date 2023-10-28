@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Mail\CustomResetPasswordEmail;
 use App\Models\User;
+use DB;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -123,19 +127,33 @@ class AuthController extends Controller
             return response()->json(['message' => $validator->errors()], 400);
         }
 
-        $status = Password::sendResetLink($request->only('email'));
+        $user = $this->broker()->getUser($request->only('email'));
 
-        if ($status === Password::RESET_LINK_SENT) {
-            return response()->json(['message' => 'Password reset link sent successfully'], 200);
-        } else {
-            return response()->json(['message' => 'Unable to send reset link'], 500);
+        if (!$user) {
+            return response()->json(['message' => 'Invalid user email'], 400);
         }
+
+        $token = Str::random(8); // Generate a random token
+        DB::table('password_reset_tokens')->insert([
+            'email' => $request->email,
+            'token' => Hash::make($token),
+            'created_at' => Carbon::now(),
+        ]);
+
+        // Send the custom email
+        $emailData = [
+            'token' => $token,
+            'email' => $request->email,
+        ];
+
+        Mail::to($request->email)->send(new CustomResetPasswordEmail($emailData));
+
+        return response()->json(['token' => $token], 200);
     }
 
-    public function resetPassword(Request $request)
+    public function resetPassword(Request $request, $token)
     {
         $validator = Validator::make($request->all(), [
-            'token' => 'required|string',
             'email' => 'required|email',
             'password' => 'required|min:6|confirmed',
         ]);
@@ -144,25 +162,32 @@ class AuthController extends Controller
             return response()->json(['message' => $validator->errors()], 400);
         }
 
-        $status = Password::reset($request->only(
-            'email',
-            'password',
-            'password_confirmation',
-            'token'
-        ), function ($user, $password) {
-            $user->forceFill([
-                'password' => Hash::make($password),
-                'remember_token' => Str::random(60),
-            ])->save();
+        $reset = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
 
-            event(new PasswordReset($user));
-        });
-
-        if ($status === Password::PASSWORD_RESET) {
-            return response()->json(['message' => 'Password reset successfully'], 200);
-        } else {
-            return response()->json(['message' => 'Unable to reset password'], 500);
+        if (!$reset) {
+            return response()->json(['message' => 'Invalid password reset token'], 400);
         }
+
+        if (!Hash::check($token, $reset->token)) {
+            return response()->json(['message' => 'Invalid password reset token'], 400);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->delete();
+
+        return response()->json(['message' => 'Password reset successfully'], 200);
+    }
+
+    protected function broker()
+    {
+        return Password::broker();
     }
 
 
