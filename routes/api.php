@@ -13,8 +13,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/password/email', [AuthController::class, 'sendResetLinkEmail']);
-Route::post('/password/reset', [AuthController::class, 'resetPassword']);
-
+Route::post('password/reset/{token}', [AuthController::class, 'resetPassword'])->name('password.reset');
 Route::group(['prefix' => 'email'], function () {
     Route::get('/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])->name('verification.verify');
     Route::post('/resend', [AuthController::class, 'resendVerificationEmail'])->name('verification.resend');
