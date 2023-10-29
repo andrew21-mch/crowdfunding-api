@@ -14,7 +14,7 @@ class CampaignController extends Controller
         $validatedData = $request->validate([
             'title' => 'required',
             'description' => 'required',
-            'target_amount' => 'required|numeric|min:0',
+            'goal_amount' => 'required|numeric|min:0',
         ]);
 
 
@@ -22,7 +22,7 @@ class CampaignController extends Controller
         $campaign = Campaign::create([
             'title' => $validatedData['title'],
             'description' => $validatedData['description'],
-            'goal_amount' => $validatedData['target_amount'],
+            'goal_amount' => $validatedData['goal_amount'],
             'current_amount' => 0,
             'user_id' => auth()->user()->id,
         ]);
@@ -63,7 +63,7 @@ class CampaignController extends Controller
         $validatedData = $request->validate([
             'title' => 'required',
             'description' => 'required',
-            'target_amount' => 'required|numeric|min:0',
+            'goal_amount' => 'required|numeric|min:0',
         ]);
 
         $campaign = Campaign::findOrFail($campaignId);
@@ -72,7 +72,7 @@ class CampaignController extends Controller
         $campaign->update([
             'title' => $validatedData['title'],
             'description' => $validatedData['description'],
-            'target_amount' => $validatedData['target_amount'],
+            'goal_amount' => $validatedData['goal_amount'],
         ]);
 
         return response()->json(['campaign' => $campaign]);
