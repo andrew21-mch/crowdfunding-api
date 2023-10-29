@@ -87,7 +87,7 @@ php artisan serve
 
 ## API Documentation
 
-[Documentation][https://documenter.getpostman.com/view/17184783/2s9YRGxoij#691f1709-15a4-4c4a-9d8d-1e6058fb6867]
+[Documentation](https://documenter.getpostman.com/view/17184783/2s9YRGxoij#691f1709-15a4-4c4a-9d8d-1e6058fb6867)
 
 ## Testing
 
