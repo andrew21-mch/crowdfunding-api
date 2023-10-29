@@ -27,8 +27,9 @@ Route::group(['prefix' => 'email'], function () {
 
 // Campaign routes
 Route::group(['prefix' => 'campaigns'], function () {
+Route::get('/search-campaigns/get/', [CampaignController::class, 'searchCampaign']);
     Route::get('/', [CampaignController::class, 'getAllCampaigns']);
     Route::get('/{campaign_id}', [CampaignController::class, 'getCampaign']);
     Route::post('/{campaign_id}/donate', [CampaignController::class, 'makeDonation']);
-    Route::get('/search', [CampaignController::class, 'searchCampaign']);
 });
+

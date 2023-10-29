@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Campaign;
 use App\Models\Donation;
+use Illuminate\Support\Facades\Cache;
 
 class CampaignController extends ApiBaseController
 {
@@ -111,4 +112,39 @@ class CampaignController extends ApiBaseController
 
         return $this->successResponse('Donation made successfully', ['donation' => $donation], Response::HTTP_CREATED);
     }
+
+    public function searchCampaign(Request $request)
+{
+    // Get the search term from the request
+    $searchTerm = $request->query;
+
+    $searchTerm = $request->query;
+    $searchTerm = implode('', $searchTerm->all());
+
+    // Check if the search results are cached
+    $campaigns = Cache::get('campaigns.' . $searchTerm);
+
+    // If the search results are not cached, perform the search and cache the results
+    if ($campaigns === null) {
+        $campaigns = Campaign::with('createdBy');
+
+        $titleFilter = $request->query->get('title');
+        $descriptionFilter = $request->query->get('description');
+
+        if ($titleFilter !== null) {
+            $campaigns = $campaigns->where('title', 'like', '%' . $titleFilter . '%');
+        }
+
+        if ($descriptionFilter !== null) {
+            $campaigns = $campaigns->where('description', 'like', '%' . $descriptionFilter . '%');
+        }
+
+        $campaigns = $campaigns->get();
+
+        Cache::put('campaigns.' . $searchTerm, $campaigns, 60);
+    }
+
+    return $this->successResponse('Campaigns search results', ['campaigns' => $campaigns]);
+}
+
 }
