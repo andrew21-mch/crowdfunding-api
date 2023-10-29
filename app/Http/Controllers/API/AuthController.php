@@ -150,7 +150,7 @@ class AuthController extends ApiBaseController
 
         Mail::to($request->email)->send(new CustomResetPasswordEmail($emailData));
 
-        return $this->successResponse(['token' => $token], null, Response::HTTP_OK);
+        return $this->successResponse(null, ['token' => $token], Response::HTTP_OK);
     }
 
     public function resetPassword(Request $request, $token)

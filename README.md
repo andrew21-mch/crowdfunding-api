@@ -91,18 +91,23 @@ php artisan serve
 
 ## Testing
 
--
+-Please ensure that the necessary environment variables are set up for testing in the `.env.testing` file.
+
+
+after , run
+
+```
+php artisan test --env=testing
+```
 
 ## Contributing
 
--
+Contributions are welcome! If you encounter any issues or have suggestions for enhancements, please open an issue or submit a pull request. Please refer to the [Contribution Guidelines](/CONTRIBUTING.md) for more information.
 
 ## License
 
--
+This project is licensed under the [MIT License](/LICENSE).
 
 ## Contact
 
--
-
-   
+For any questions or inquiries, please contact Nfon Andrew at andy@skye8.tech
