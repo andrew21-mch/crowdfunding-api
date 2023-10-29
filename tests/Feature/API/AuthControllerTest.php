@@ -107,4 +107,51 @@ class AuthControllerTest extends TestCase
             'name' => 'test-token',
         ]);
     }
+
+    public function test_get_user()
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('test-token')->plainTextToken;
+
+        $headers = [
+            'Authorization' => 'Bearer ' . $token,
+            'Accept' => 'application/json',
+        ];
+
+        $response = $this->get('/api/user', $headers);
+
+        $response->assertStatus(Response::HTTP_OK); 
+    }
+
+    public function test_update_user()
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('test-token')->plainTextToken;
+
+        $headers = [
+            'Authorization' => 'Bearer ' . $token,
+            'Accept' => 'application/json',
+        ];
+
+        $newName = $this->faker->name;
+        $newEmail = $this->faker->safeEmail;
+
+        $requestData = [
+            'name' => $newName,
+            'email' => $newEmail,
+        ];
+
+        $response = $this->put('/api/user', $requestData, $headers);
+
+        $response->assertStatus(Response::HTTP_OK)
+            ->assertJson([
+                'message' => 'User profile updated successfully',
+                'data' => null,
+                'code' => Response::HTTP_OK,
+            ]);
+
+        // Assert that the user's name and email have been updated correctly
+        $this->assertEquals($newName, $user->fresh()->name);
+        $this->assertEquals($newEmail, $user->fresh()->email);
+    }
 }
