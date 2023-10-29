@@ -79,13 +79,38 @@ class CampaignControllerTest extends TestCase
                         'title' => $campaign->title,
                         'description' => $campaign->description,
                         'goal_amount' => $campaign->goal_amount,
-                        // Add any additional attributes you want to assert
                     ]
                 ]
             ]);
 
         $this->assertDatabaseHas('campaigns', ['id' => $campaign->id]);
     }
+    
+    public function test_update_campaign()
+{
+    $token = $this->authenticate();
+
+    // Create a campaign record in the database
+    $campaign = Campaign::factory()->create();
+
+    $updatedData = [
+        'title' => 'Updated Campaign',
+        'description' => 'This is an updated campaign.',
+        'goal_amount' => 2000,
+    ];
+
+    $response = $this->put('/api/campaigns/' . $campaign->id, $updatedData, $this->getHeaders($token));
+
+    $response->assertOk()
+        ->assertJsonStructure(['data' => ['campaign']])
+        ->assertJson([
+            'data' => [
+                'campaign' => $updatedData
+            ]
+        ]);
+
+    $this->assertDatabaseHas('campaigns', $updatedData);
+}
     private function getHeaders($token = null)
     {
         $headers = [];
@@ -96,4 +121,6 @@ class CampaignControllerTest extends TestCase
 
         return $headers;
     }
+
+
 }
