@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\Models\Campaign;
 use App\Models\Donation;
-use Illuminate\Http\Request;
 
-class CampaignController extends Controller
+class CampaignController extends ApiBaseController
 {
     public function createCampaign(Request $request)
     {
@@ -18,7 +19,6 @@ class CampaignController extends Controller
             'goal_amount' => 'required|numeric|min:0',
         ]);
 
-
         // Create the campaign
         $campaign = Campaign::create([
             'title' => $validatedData['title'],
@@ -28,35 +28,35 @@ class CampaignController extends Controller
             'user_id' => auth()->user()->id,
         ]);
 
-        return response()->json(['campaign' => $campaign], 201);
+        return $this->successResponse('Campaign created successfully', ['campaign' => $campaign], Response::HTTP_CREATED);
     }
 
     public function getAllCampaigns()
     {
         $campaigns = Campaign::with('createdBy')->get();
 
-        return response()->json(['campaigns' => $campaigns]);
+        return $this->successResponse('All campaigns retrieved successfully', ['campaigns' => $campaigns]);
     }
 
     public function getCampaign($campaignId)
-{
-    try {
-        $campaign = Campaign::with('createdBy', 'donations')->findOrFail($campaignId);
+    {
+        try {
+            $campaign = Campaign::with('createdBy', 'donations')->findOrFail($campaignId);
 
-        // Perform any additional validation checks here
-        // For example, you can check if the campaign is active, etc.
+            // Perform any additional validation checks here
+            // For example, you can check if the campaign is active, etc.
 
-        return response()->json(['campaign' => $campaign]);
-    } catch (\Exception $e) {
-        // Handle the case where the campaign is not found
-        if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
-            return response()->json(['error' => 'Campaign not found'], 404);
+            return $this->successResponse('Campaign retrieved successfully', ['campaign' => $campaign]);
+        } catch (\Exception $e) {
+            // Handle the case where the campaign is not found
+            if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                return $this->errorResponse('Campaign not found', null, Response::HTTP_NOT_FOUND);
+            }
+
+            // Handle any other exceptions or validation errors
+            return $this->errorResponse($e->getMessage(), null, Response::HTTP_BAD_REQUEST);
         }
-
-        // Handle any other exceptions or validation errors
-        return response()->json(['error' => $e->getMessage()], 400);
     }
-}
 
     public function updateCampaign(Request $request, $campaignId)
     {
@@ -76,7 +76,7 @@ class CampaignController extends Controller
             'goal_amount' => $validatedData['goal_amount'],
         ]);
 
-        return response()->json(['campaign' => $campaign]);
+        return $this->successResponse('Campaign updated successfully', ['campaign' => $campaign]);
     }
 
     public function deleteCampaign($campaignId)
@@ -86,7 +86,7 @@ class CampaignController extends Controller
         // Delete the campaign
         $campaign->delete();
 
-        return response()->json(['message' => 'Campaign deleted successfully']);
+        return $this->successResponse('Campaign deleted successfully', null);
     }
 
     public function makeDonation(Request $request, $campaignId)
@@ -109,6 +109,6 @@ class CampaignController extends Controller
         $campaign->current_amount += $donation->amount;
         $campaign->save();
 
-        return response()->json(['donation' => $donation], 201);
+        return $this->successResponse('Donation made successfully', ['donation' => $donation], Response::HTTP_CREATED);
     }
 }
