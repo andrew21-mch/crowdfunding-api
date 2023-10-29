@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Campaign;
+use App\Models\Donation;
 use Illuminate\Http\Request;
 
 class CampaignController extends Controller
@@ -40,7 +41,7 @@ class CampaignController extends Controller
     public function getCampaign($campaignId)
 {
     try {
-        $campaign = Campaign::with('createdBy')->findOrFail($campaignId);
+        $campaign = Campaign::with('createdBy', 'donations')->findOrFail($campaignId);
 
         // Perform any additional validation checks here
         // For example, you can check if the campaign is active, etc.
@@ -100,7 +101,7 @@ class CampaignController extends Controller
         // Create the donation
         $donation = Donation::create([
             'amount' => $validatedData['amount'],
-            'user_id' => auth()->user()->id,
+            'user_id' => auth()->user()->id ?? null,
             'campaign_id' => $campaign->id,
         ]);
 
