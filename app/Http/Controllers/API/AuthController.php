@@ -53,7 +53,7 @@ class AuthController extends ApiBaseController
         $credentials = $request->only('email', 'password');
 
         if (!Auth::attempt($credentials)) {
-            return $this->errorResponse('Invalid credentials', Response::HTTP_UNAUTHORIZED);
+            return $this->errorResponse('Invalid credentials',null, Response::HTTP_UNAUTHORIZED);
         }
 
         $user = $request->user();
